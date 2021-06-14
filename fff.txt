@@ -1,0 +1,41 @@
+Jun 11 16:34:56 RuckusAP daemon.info hostapd: wlan1: STA cc:50:e3:68:83:d7 IEEE 802.11: disassociated
+Jun 11 16:34:56 RuckusAP daemon.info hostapd: wlan1: STA cc:50:e3:68:83:d7 IEEE 802.11: reason code = 8
+Jun 11 16:34:56 RuckusAP daemon.info hostapd: wlan1: DRIVER madwifi_del_key: Failed to delete key (addr cc:50:e3:68:83:d7 key_idx 0)
+Jun 11 16:34:56 RuckusAP daemon.info hostapd: wlan1: DRIVER madwifi_del_key: Failed to delete key (addr cc:50:e3:68:83:d7 key_idx 0)
+Jun 11 16:34:56 RuckusAP daemon.info hostapd: wlan1: DRIVER madwifi_set_sta_authorized: Failed to unauthorize STA cc:50:e3:68:83:d7
+Jun 11 16:34:56 RuckusAP daemon.info hostapd: wlan1: DRIVER madwifi_set_sta_authstats: Failed to unauthorize STA authstatscc:50:e3:68:83:d7
+Jun 11 16:34:56 RuckusAP daemon.warn Eved: STA-DISASSOC-REASON [ieee80211_recv_mgmt(),8781,recv disassociate (reason 8)] cc:50:e3:68:83:d7 rx_rssi=43,ack_rssi=0,reason=8,freq=2437,chan=6,rx pkt,byte;tx pkt,byte=(5,1252,41,7658)
+Jun 11 16:34:56 RuckusAP daemon.warn Eved: STA-DISASSOC-REASON [ieee80211_recv_mgmt(),8781,recv disassociate (reason 8)] f8:e7:1e:56:b8:58 rx_rssi=41,ack_rssi=0,reason=8,freq=2437,chan=6,rx pkt,byte;tx pkt,byte=(0,0,0,0)
+Jun 11 16:35:00 RuckusAP daemon.err wsgclient[586]: resolve_addrinfo:1038 Address [RuckusController] is invalid address.[-2: Name or service not known].  
+Jun 11 16:35:00 RuckusAP daemon.err wsgclient[586]: curl_https_request:1082 resolve address[RuckusController] fail.  
+Jun 11 16:35:00 RuckusAP daemon.info hostapd: wlan0: STA cc:50:e3:68:83:d7 IEEE 802.11: associated
+Jun 11 16:35:00 RuckusAP daemon.info hostapd: wlan0: STA cc:50:e3:68:83:d7 WPA: mic_len:16 key_data_len:0, ie_len:0, gtk_len:0, igtk_kde_len:0, pad_len:0 ***
+Jun 11 16:35:00 RuckusAP daemon.info hostapd: wlan0: STA cc:50:e3:68:83:d7 WPA: mic_len:16 key_data_len:56, ie_len:22, gtk_len:16, igtk_kde_len:0, pad_len:2 ***
+Jun 11 16:35:00 RuckusAP daemon.info hostapd: wlan0: STA cc:50:e3:68:83:d7 WPA: pairwise key handshake completed (RSN)
+Jun 11 16:35:01 RuckusAP local2.err syslog:  AP get the broadcast ip in its subnet, the broadcast ip is 192.168.2.255   
+Jun 11 16:35:05 RuckusAP daemon.err wsgclient[586]: resolve_addrinfo:1038 Address [RuckusController] is invalid address.[-2: Name or service not known].  
+Jun 11 16:35:05 RuckusAP daemon.err wsgclient[586]: curl_https_request:1082 resolve address[RuckusController] fail.  
+Jun 11 16:35:07 RuckusAP daemon.info hostapd: wlan0: STA cc:50:e3:68:83:d7 IEEE 802.11: disassociated
+Jun 11 16:35:07 RuckusAP daemon.info hostapd: wlan0: STA cc:50:e3:68:83:d7 IEEE 802.11: reason code = 8
+Jun 11 16:35:07 RuckusAP daemon.info hostapd: wlan0: DRIVER madwifi_del_key: Failed to delete key (addr cc:50:e3:68:83:d7 key_idx 0)
+Jun 11 16:35:07 RuckusAP daemon.warn Eved: STA-DISASSOC-REASON [ieee80211_recv_mgmt(),8781,recv disassociate (reason 8)] cc:50:e3:68:83:d7 rx_rssi=45,ack_rssi=0,reason=8,freq=2437,chan=6,rx pkt,byte;tx pkt,byte=(5,1252,2,254)
+Jun 11 16:35:07 RuckusAP daemon.info hostapd: wlan0: DRIVER madwifi_del_key: Failed to delete key (addr cc:50:e3:68:83:d7 key_idx 0)
+Jun 11 16:35:07 RuckusAP daemon.info hostapd: wlan0: DRIVER madwifi_set_sta_authorized: Failed to unauthorize STA cc:50:e3:68:83:d7
+Jun 11 16:35:07 RuckusAP daemon.info hostapd: wlan0: DRIVER madwifi_set_sta_authstats: Failed to unauthorize STA authstatscc:50:e3:68:83:d7
+Jun 11 16:35:07 RuckusAP daemon.warn Eved: STA-DISASSOC-REASON [ieee80211_recv_mgmt(),8781,recv disassociate (reason 8)] f8:e7:1e:16:b8:58 rx_rssi=44,ack_rssi=0,reason=8,freq=2437,chan=6,rx pkt,byte;tx pkt,byte=(0,0,1014740,167977451)
+Jun 11 16:35:10 RuckusAP daemon.err wsgclient[586]: resolve_addrinfo:1038 Address [RuckusController] is invalid address.[-2: Name or service not known].  
+Jun 11 16:35:10 RuckusAP daemon.err wsgclient[586]: curl_https_request:1082 resolve address[RuckusController] fail.  
+Jun 11 16:35:11 RuckusAP daemon.info hostapd: wlan0: STA cc:50:e3:68:83:d7 IEEE 802.11: associated
+Jun 11 16:35:11 RuckusAP daemon.info hostapd: wlan0: STA cc:50:e3:68:83:d7 WPA: mic_len:16 key_data_len:0, ie_len:0, gtk_len:0, igtk_kde_len:0, pad_len:0 ***
+Jun 11 16:35:11 RuckusAP daemon.info hostapd: wlan0: STA cc:50:e3:68:83:d7 WPA: mic_len:16 key_data_len:56, ie_len:22, gtk_len:16, igtk_kde_len:0, pad_len:2 ***
+Jun 11 16:35:11 RuckusAP daemon.info hostapd: wlan0: STA cc:50:e3:68:83:d7 WPA: pairwise key handshake completed (RSN)
+Jun 11 16:35:16 RuckusAP daemon.err wsgclient[586]: resolve_addrinfo:1038 Address [RuckusController] is invalid address.[-2: Name or service not known].  
+Jun 11 16:35:16 RuckusAP daemon.err wsgclient[586]: curl_https_request:1082 resolve address[RuckusController] fail.  
+Jun 11 16:35:18 RuckusAP daemon.info hostapd: wlan0: STA cc:50:e3:68:83:d7 IEEE 802.11: disassociated
+Jun 11 16:35:18 RuckusAP daemon.info hostapd: wlan0: STA cc:50:e3:68:83:d7 IEEE 802.11: reason code = 8
+Jun 11 16:35:18 RuckusAP daemon.info hostapd: wlan0: DRIVER madwifi_del_key: Failed to delete key (addr cc:50:e3:68:83:d7 key_idx 0)
+Jun 11 16:35:18 RuckusAP daemon.warn Eved: STA-DISASSOC-REASON [ieee80211_recv_mgmt(),8781,recv disassociate (reason 8)] cc:50:e3:68:83:d7 rx_rssi=43,ack_rssi=0,reason=8,freq=2437,chan=6,rx pkt,byte;tx pkt,byte=(5,1252,2,254)
+Jun 11 16:35:18 RuckusAP daemon.info hostapd: wlan0: DRIVER madwifi_del_key: Failed to delete key (addr cc:50:e3:68:83:d7 key_idx 0)
+Jun 11 16:35:18 RuckusAP daemon.warn Eved: STA-DISASSOC-REASON [ieee80211_recv_mgmt(),8781,recv disassociate (reason 8)] f8:e7:1e:16:b8:58 rx_rssi=44,ack_rssi=0,reason=8,freq=2437,chan=6,rx pkt,byte;tx pkt,byte=(0,0,1014790,167986591)
+Jun 11 16:35:18 RuckusAP daemon.info hostapd: wlan0: DRIVER madwifi_set_sta_authorized: Failed to unauthorize STA cc:50:e3:68:83:d7
+Jun 11 16:35:18 RuckusAP daemon.info hostapd: wlan0: DRIVER madwifi_set_sta_authstats: Failed to unauthorize STA authstatscc:50:e3:68:83:d7
