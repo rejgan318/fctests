@@ -1,0 +1,21 @@
+{
+  "name": "Женя",
+  "method": 55,
+  "tags": [
+    {
+      "tagid": 1,
+      "tag": "Одын",
+      "optional": 100
+    },
+    {
+      "tagid": 2,
+      "tag": "Дыва",
+      "optional": 200
+    },
+    {
+      "tagid": 5,
+      "tag": "Новый",
+      "optional": 100
+    }
+  ]
+}

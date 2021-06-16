@@ -219,28 +219,38 @@ def main():
     pars = ap.parse_args('testpict'.split())
     # pars = ap.parse_args('../scrapered_pictures/done1'.split())
 
-    jpg_list = get_files_by_mask(pars.directory, local=pars.local)
-    # num_cpu = multiprocessing.cpu_count()
-    # print("Ядер на этом компьютере:", num_cpu, )
-    print(f'Директории {pars.directory} Количество задач (файлов) для обработки:{len(jpg_list)}')
+    # jpg_list = get_files_by_mask(pars.directory, local=pars.local)
+    # # num_cpu = multiprocessing.cpu_count()
+    # # print("Ядер на этом компьютере:", num_cpu, )
+    # print(f'Директории {pars.directory} Количество задач  (файлов) для обработки:{len(jpg_list)}')
+    #
+    # fs = facesstore.FacesStore(file_name='fs1', path='.')
+    # exif_list = get_exif_list(jpg_list)
+    # # fc_list = get_fc_list(jpg_list)
+    # # cv2_list = get_cv2_list(jpg_list)
+    #
+    # save_list = []
+    # for i, photo in enumerate(jpg_list):
+    #     # print(f'{i:3} {str(photo):30} {len(exif_list[i]):3} {len(fc_list[i]):3} {len(cv2_list[i]):3} ')
+    #     save_list.append({
+    #         'n': i,
+    #         'photo': str(photo),
+    #         'exif': exif_list[i],
+    #         # 'fc': fc_list[i],
+    #         # 'cv2': cv2_list[i],
+    #     })
+    #
+    # dump_all_data(save_list)
 
-    fs = facesstore.FacesStore(file_name='fs1', path='.')
-    exif_list = get_exif_list(jpg_list)
-    # fc_list = get_fc_list(jpg_list)
-    # cv2_list = get_cv2_list(jpg_list)
+    photos_list = facesstore.get_files_by_mask(pars.directory, local=pars.local)
+    print(f'Всего {facesstore.cm(len(photos_list))} в {facesstore.cm(pars.directory)} {"с поддиректориями" if not pars.local else ""} ')
+    for cur_dir, files_in_dir in facesstore.get_dirs(photos_list).items():
+        fs = facesstore.FacesStore('mystore', cur_dir)
+        print(f'{facesstore.cm(len(files_in_dir))} файлов в {cur_dir}: {facesstore.short_list(files_in_dir, )}')
+        exif_list = get_exif_list([pathlib.Path(cur_dir) / pathlib.Path(p) for p in files_in_dir])
+        fs.add_data(data=dict(zip(files_in_dir, exif_list)), method=facesstore.Method.EXIF)
+        fs.save()
 
-    save_list = []
-    for i, photo in enumerate(jpg_list):
-        # print(f'{i:3} {str(photo):30} {len(exif_list[i]):3} {len(fc_list[i]):3} {len(cv2_list[i]):3} ')
-        save_list.append({
-            'n': i,
-            'photo': str(photo),
-            'exif': exif_list[i],
-            # 'fc': fc_list[i],
-            # 'cv2': cv2_list[i],
-        })
-
-    dump_all_data(save_list)
     print('Done.')
     return True
 
