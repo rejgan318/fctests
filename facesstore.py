@@ -1,13 +1,11 @@
 """
 
 """
-import enum
-import json
+from enum import IntFlag
 import pathlib
-import pickle
 import time
-import colorama
 from pydantic import BaseModel
+
 
 # class PhotoInfo:
 #
@@ -79,46 +77,52 @@ from pydantic import BaseModel
 #         self.photos[self.image_name.name]['faces'] = faces
 
 
-class Method(enum.Flag):
+class Method(IntFlag):
     """ Флаги методов распознования """
-    EXIF = enum.auto()
-    FACE_RECOGNITION = enum.auto()
-    CV2 = enum.auto()
-    DLIB = enum.auto()
-    MTCNN = enum.auto()
+    EXIF = 1
+    FACE_RECOGNITION = 2
+    CV2 = 4
+    DLIB = 8
+    MTCNN = 16
 
 
-class FaceInfo:
-    def __init__(self, Name: str = None, Type: str = None, Rotation: float = None, h: float = None, w: float = None,
-                 x: float = None, y: float = None, x1: int = None, y1: int = None, x2: int = None, y2: int = None, ):
-        self.Name: str = Name
-        self.Type: str = Type
-        self.Rotation: float = Rotation
-        self.h: float = h
-        self.w: float = w
-        self.x: float = x
-        self.y: float = y
-        self.x1: int = x1
-        self.y1: int = y1
-        self.x2: int = x2
-        self.y2: int = y2
-        # self.encode: dict = {}
+class FaceInfo(BaseModel):
+    name: str = None
+    type_region: str = None
+    rotation: float = None
+    h: float = None
+    w: float = None
+    x: float = None
+    y: float = None
+    x1: int
+    y1: int
+    x2: int
+    y2: int
 
 
-class ForSave:
-    def __init__(self):
-        self.exif: list
+class PhotoFile(BaseModel):
+    name: str
+    width: int = None
+    height: int = None
+    faces_exif: list[FaceInfo] = []
+    faces_cv2: list[FaceInfo] = []
+
+
+class Photos(BaseModel):
+    program_name: str = 'Face Store'
+    version: str = '0.3'  # Текущая версия
+    descriptions: str = ''
+    path: str
+    methods: Method
+    photos: list[PhotoFile]
 
 
 class FacesStore:
-    DEFAULT_NAME = 'photos'
-    DEFAULT_EXT_PICLE = '.pickle'
-    DEFAULT_EXT_JSON = '.json'
-    JSON = 1
-    PICKLE = 2
-
-    PROGRAM = 'Face Store'
-    VERSION = '0.2'
+    DEFAULT_NAME: str = 'photos'
+    DEFAULT_EXT_PICLE: str = '.pickle'
+    DEFAULT_EXT_JSON: str = '.json'
+    JSON: int = 1
+    PICKLE: int = 2
 
     def __init__(self, file_name: str = '', path: str = '.'):
 
@@ -133,8 +137,6 @@ class FacesStore:
                 self.json_file = self.file_name + self.DEFAULT_EXT_JSON
                 self.pickle_file = self.file_name + self.DEFAULT_EXT_PICLE
 
-        self.program_name = self.PROGRAM
-        self.version = self.VERSION  # Текущая версия
         self.time = time.time()
         self.file_name = file_name if file_name != '' else self.DEFAULT_NAME + self.DEFAULT_EXT_PICLE
         self.store2json = True
@@ -145,7 +147,7 @@ class FacesStore:
         self.path_name = path
         self.methods = None
         self.exif = None
-        self.data = {}  # данные для сохранения / считывания
+        self.photos: list[PhotoFile] = []  # данные для сохранения / считывания
 
     def is_exist(self, file_name: str = '', path: str = ''):
         """
@@ -157,29 +159,27 @@ class FacesStore:
         path_name = self.path_name if path == '' else path
         return (pathlib.Path(path_name) / file).exists()
 
-    def _parse_exif_in(self, data):
-        for file_name, exif_faces in data.items():
-            if not self.data.get(file_name, False):
-                self.data[file_name] = ForSave()
-            self.data[file_name].exif = []
-            for one_face in exif_faces:
-                self.data[file_name].exif.append(FaceInfo(**one_face))
-        return True
+    def _parse_exif(self, name: str, data: dict, faces: list[dict]):
+        data_faces = [FaceInfo(**p) for p in faces]
+        if name in [p.name for p in self.photos]:   # протестироваь ветку, если файл уже есть в списке и обрабатывается другим методом
+            self.photos[[p.name for p in self.photos].index(name)].faces_exif = data_faces
+        else:
+            self.photos.append(PhotoFile(name=name, width=data['width'], height=data['height'],
+                                         faces_exif=data_faces))
 
-    def add_data(self, data, method: Method):
+    def add_data(self, method: Method, name: str, data: dict, faces: list[dict]):
         if method == Method.EXIF:
             self.methods = (self.methods | Method.EXIF) if self.methods else Method.EXIF
-            self.exif = self._parse_exif_in(data)
+            self.exif = self._parse_exif(name, data, faces)
 
-    def save(self):
-        if self.pickle_file:
-            with open(self.pickle_file, 'wb') as f:
-                pickle.dump(self.data, f)
-        print('Записано ПИкле')
-        # if self.json_file:
-        #     with open(self.json_file, 'w', encoding='utf-8') as f:
-        #         json.dump(self.data, f, indent=4, ensure_ascii=False)
-        # print('Записано Джсон')
+    def save(self, path: pathlib.Path, json_file: str = None, description: str = ''):
+        # if self.pickle_file:
+        #     with open(self.pickle_file, 'wb') as f:
+        #         pickle.dump(self.data, f)
+        # print('Записано ПИкле')
+        json_file = json_file or self.json_file
+        photos = Photos(descriptions=description, methods=self.methods, photos=self.photos, path=str(path))
+        (path / json_file).write_text(photos.json(indent=2, ensure_ascii=False), encoding='utf-8')
 
     def load(self):
         pass
@@ -222,6 +222,7 @@ def get_dirs(photos: list) -> dict:
             dirs_photos[d_photo] = [pathlib.Path(photo).name]  # новая директория, начинаем список с текущего файла
     return dirs_photos
 
+
 cm: str = lambda s: colorama.Fore.LIGHTMAGENTA_EX + str(s) + colorama.Fore.RESET
 cg: str = lambda s: colorama.Fore.LIGHTGREEN_EX + str(s) + colorama.Fore.RESET
 
@@ -242,7 +243,9 @@ def short_list(long_list: list, max_len: int = 5, separator: str = ', ', hidden_
     else:
         return separator.join(map(str, long_list[:max_len]))
 
+
 if __name__ == '__main__':
+    import colorama
 
     print('Тест на первоначальную инициализацию')
     # for param in [('',), ('mystore',), ('mystore.JSON', '../source'), ('mystore.pickle', 'mydir')]:
@@ -282,6 +285,5 @@ if __name__ == '__main__':
     #     print(f'Всего {cm(len(photo_files))} в {cm(test[0])} {"с поддиректориями" if not local else ""} ')
     #     for cur_dir, files_in_dir in get_dirs(photo_files).items():
     #         print(f'{cm(len(files_in_dir))} файлов в {cur_dir}: {short_list(files_in_dir, )}')
-
 
     print(cg('Done'))

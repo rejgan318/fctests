@@ -10,14 +10,14 @@ import pathlib
 import argparse
 import multiprocessing
 import queue
-import xmpfaces         # Мое
 import PIL
-import pickle
 import face_recognition
 import cv2
+import pickle
 import json
 from tqdm import tqdm
-import facesstore
+import xmpfaces         # Мое
+import facesstore       # Мое
 # import mtcnn
 
 
