@@ -2,79 +2,9 @@
 
 """
 from enum import IntFlag
-import pathlib
+from pathlib import Path
 import time
 from pydantic import BaseModel
-
-
-# class PhotoInfo:
-#
-#     def __init__(self, path: pathlib.Path):
-#
-#         # dump_file = path / (SCAN_PHOTOS_FILE_NAME + SCAN_PHOTOS_PICKLE_SUFFIX)
-#         # if dump_file.exists():
-#         #     with open(dump_file, 'rb') as f:
-#         #         self.__dict__.update(pickle.load(f).__dict__)
-#         # else:
-#         #     self.path_time = 0   # время последней модификации директории в секундах
-#         #     self.num_photos = 0         # количество фото с найденны
-#
-#         self.path_time = 0   # время последней модификации директории в секундах
-#         self.num_photos = 0         # количество фото с найденны
-#
-#         self.cwd = path.cwd()  # Текущая директория, из которой был запуск скагирования
-#         self.path = path  # Параметр - директория сканирования относительно текущей
-#         self.methods = SCAN_METHODS # возможные методы сканирования
-#         self.name = SCAN_PHOTOS_NAME
-#         self.version = SCAN_PHOTOS_VERSION  # Текущая версия
-#         self.image_name = None
-#         self.image = None
-#         self.photos = {}
-#
-#     def save(self):
-#         self.path_time = self.path.stat().st_mtime
-#         # print(f'Время директории {str(self.path)} = {time.ctime(self.path_time)}.')
-#
-#         # class PathlibEncoder(json.JSONEncoder):
-#         #     def default(self, obj):
-#         #         if isinstance(obj, pathlib.WindowsPath):
-#         #             return str(obj)
-#         #         return json.JSONEncoder.default(self, obj)
-#         #
-#         # to_save = json.dumps(self.__dict__, indent=4, cls=PathlibEncoder)
-#         # file2save = pathlib.Path(self.path) / (SCAN_PHOTOS_FILE_NAME + SCAN_PHOTOS_JSON_SUFFIX)
-#         # file2save.write_text(to_save)
-#
-#         # file2save = pathlib.Path(self.path) / (SCAN_PHOTOS_FILE_NAME + SCAN_PHOTOS_PICKLE_SUFFIX)
-#         # with open(file2save, "wb") as pickle_file:
-#         with open(pathlib.Path(self.path) / (SCAN_PHOTOS_FILE_NAME + SCAN_PHOTOS_PICKLE_SUFFIX), "wb") as pickle_file:
-#             pickle.dump(self, pickle_file)
-#
-#     def set_fr_boxes(self, boxes):
-#         self.photos[self.image_name.name]['fr']['boxes'] = boxes
-#         self.num_photos += len(boxes)
-#         self.photos[self.image_name.name]['fr']['n'] = len(boxes)
-#
-#     def set_fr_enc(self, face_encodings):
-#         self.photos[self.image_name.name]['fr']['enc'] = face_encodings
-#
-#     def set_image(self, image: pathlib.Path):
-#         self.image_name = image
-#         if not hasattr(self.photos, self.image_name.name):
-#             self.photos[self.image_name.name] = {
-#                 'dt': 0,
-#                 'size': 0,
-#                 'wh': [None, None],
-#                 'fr': {
-#                     'n': 0,
-#                     'boxes': None,
-#                     'enc': None,
-#                 },
-#                              }
-#
-#     def set_xmp(self, faces, wh):
-#         self.photos[self.image_name.name]['wh'] = wh
-#         self.photos[self.image_name.name]['faces'] = faces
 
 
 class Method(IntFlag):
@@ -110,117 +40,112 @@ class PhotoFile(BaseModel):
 
 class Photos(BaseModel):
     program_name: str = 'Face Store'
-    version: str = '0.3'  # Текущая версия
+    version: str = '0.4'  # Текущая версия
     descriptions: str = ''
-    path: str
+    # path: str
     methods: Method
-    photos: list[PhotoFile]
+    photos: dict = {}
+    # photos: list[PhotoFile]
 
 
 class FacesStore:
-    DEFAULT_NAME: str = 'photos'
-    DEFAULT_EXT_PICLE: str = '.pickle'
-    DEFAULT_EXT_JSON: str = '.json'
-    JSON: int = 1
-    PICKLE: int = 2
+    DEFAULT_EXT: str = '.json'
+    DEFAULT_NAME: str = 'fs'
+    DEFAULT_MASK = ['jpg']
 
-    def __init__(self, file_name: str = '', path: str = '.'):
+    def __init__(self, dirs: list[Path] = None,
+                 local: bool = False,
+                 mask: list[str] = None,
+                 json_file: str = None,
+                 description: str = None):
 
-        def _def_json_pickle_files():
-            if self.file_name.lower().endswith(self.DEFAULT_EXT_JSON):
-                self.store2pickle = False
-                self.json_file = file_name
-            elif self.file_name.lower().endswith(self.DEFAULT_EXT_PICLE):
-                self.store2json = False
-                self.pickle_file = file_name
-            else:
-                self.json_file = self.file_name + self.DEFAULT_EXT_JSON
-                self.pickle_file = self.file_name + self.DEFAULT_EXT_PICLE
+        self.dirs_names: list[Path] = dirs  # список имен директорий, файлов
+        self.local: bool = local  # если True, то поиск без поддиректорий
+        self.mask: list[str] = mask or self.DEFAULT_MASK  # список расширений обрабатываемых файлов
+        self.json_file: Path = None
+        if not json_file or json_file == '':
+            self.json_file = Path(self.DEFAULT_NAME + self.DEFAULT_EXT)
+        elif not Path(json_file).suffix:
+            self.json_file = Path(json_file + self.DEFAULT_EXT)
+        else:
+            self.json_file = Path(json_file)
+        self.description: str = description
 
         self.time = time.time()
-        self.file_name = file_name if file_name != '' else self.DEFAULT_NAME + self.DEFAULT_EXT_PICLE
-        self.store2json = True
-        self.store2pickle = True
-        self.json_file = None
-        self.pickle_file = None
-        _def_json_pickle_files()
-        self.path_name = path
         self.methods = None
         self.exif = None
-        self.photos: list[PhotoFile] = []  # данные для сохранения / считывания
+        self.dirs: dict = {}
+        self.files: list[Path] = []
+        if self.dirs_names:
+            self.get_files()
+            self.get_dirs()
 
-    def is_exist(self, file_name: str = '', path: str = ''):
-        """
-        Проверка существования файлов json и pickle
-        """
-        file = self.file_name if file_name == '' else file_name
-        if not file:
-            return False
-        path_name = self.path_name if path == '' else path
-        return (pathlib.Path(path_name) / file).exists()
+        self.photos: dict = {}  # данные для сохранения / считывания
+        # self.photos: list[PhotoFile] = []  # данные для сохранения / считывания
 
-    def _parse_exif(self, name: str, data: dict, faces: list[dict]):
+    def get_files(self):
+        """
+        по списку директорий сформировать список файлов с заданным расширением, входящих в поддиректории тоже
+        Ограничение: имена директории и поддиректории не должны заканчиваться на маску расширения, иначе они попадут в
+            формируемый список файлов
+        """
+        for cur_dir in self.dirs_names:
+            if cur_dir.is_dir():
+                cur_files = []
+                for m in self.mask:
+                    cur_files += cur_dir.glob(("**/" if not self.local else "") + '*.' + m)
+            else:  # Файл в параметрах, не опрабатываем
+                cur_files = [cur_dir]
+            self.files += cur_files
+        # self.files.sort()
+
+    def get_dirs(self, dirs: list[Path] = None, local: bool = None):
+        """
+        Из полного списка файлов вернуть словарь
+            ключ - имя директории
+            значение - список файлов в этой директории
+        Вызывается из __init__ если указано dirs или позже с указанием dirs и возможно нового значения local
+        """
+        if dirs:
+            self.dirs_names = dirs
+            self.local = self.local if local is None else local  # новое значение, если указано
+            self.get_files()
+        # рабочий словарь с ключом имя-директории и данными для сохранения
+        for photo in self.files:
+            d_photo = str(photo.parent.resolve())
+            if self.dirs.get(d_photo, False):
+                self.dirs[d_photo].append(photo.name)
+            else:
+                self.dirs[d_photo] = [photo.name]  # новая директория, начинаем список с текущего файла
+        # return dirs_photos
+
+    def _parse_exif(self, dir: str, file: str, data: dict, faces: list[dict]):
         data_faces = [FaceInfo(**p) for p in faces]
-        if name in [p.name for p in self.photos]:   # протестироваь ветку, если файл уже есть в списке и обрабатывается другим методом
-            self.photos[[p.name for p in self.photos].index(name)].faces_exif = data_faces
+        # if file in [p.name for p in self.photos]:  # протестироваь ветку, если файл уже есть в списке и обрабатывается другим методом
+        #     self.photos[[p.name for p in self.photos].index(file)].faces_exif = data_faces
+        # else:
+        #     self.photos.append(PhotoFile(name=file, width=data['width'], height=data['height'],
+        #                                  faces_exif=data_faces))
+        if not self.photos.get(dir, None):
+            self.photos[dir] = {}
+        if not self.photos[dir].get(file, None):
+            self.photos[dir][file] = PhotoFile(name=file, width=data['width'], height=data['height'],
+                                               faces_exif=data_faces)
         else:
-            self.photos.append(PhotoFile(name=name, width=data['width'], height=data['height'],
-                                         faces_exif=data_faces))
+            self.photos[dir][file].faces_exif = data_faces
 
-    def add_data(self, method: Method, name: str, data: dict, faces: list[dict]):
+    def add_data(self, method: Method, dir: str, file: str, data: dict, faces: list[dict]):
         if method == Method.EXIF:
             self.methods = (self.methods | Method.EXIF) if self.methods else Method.EXIF
-            self.exif = self._parse_exif(name, data, faces)
+            self._parse_exif(dir=dir, file=file, data=data, faces=faces)
 
-    def save(self, path: pathlib.Path, json_file: str = None, description: str = ''):
-        # if self.pickle_file:
-        #     with open(self.pickle_file, 'wb') as f:
-        #         pickle.dump(self.data, f)
-        # print('Записано ПИкле')
-        json_file = json_file or self.json_file
-        photos = Photos(descriptions=description, methods=self.methods, photos=self.photos, path=str(path))
-        (path / json_file).write_text(photos.json(indent=2, ensure_ascii=False), encoding='utf-8')
+    def save(self, json_file: str = None, description: str = ''):
+        photos = Photos(descriptions=description, methods=self.methods, photos=self.photos)
+        json_file = Path(json_file) if json_file else self.json_file
+        json_file.write_text(photos.json(indent=2, ensure_ascii=False), encoding='utf-8')
 
-    def load(self):
+    def load(self, json_file: str):
         pass
-
-
-def get_files_by_mask(files: list[str], mask: str = "*.jpg", local: bool = False) -> list:
-    """
-    по списку директорий сформировать список файлов с заданным расширением, входящих в поддиректории тоже
-    Используется: pathlib
-    Ограничение: имена директории и поддиректории не должны заканчиваться на маску расширения, иначе они попадут в
-        формируемый список файлов
-    :param files: список имен директорий, файлов
-    :param mask: маска расширения файла
-    :param local: если True, то поиск без поддиректорий
-    :return: список найденных файлов
-    """
-    files_by_mask = []
-    for cur_dir in files:
-        if pathlib.Path(cur_dir).is_dir():
-            cur_files = pathlib.Path(cur_dir).glob(("**/" if not local else "") + mask)
-        else:  # Файл в параметрах
-            cur_files = [pathlib.Path(cur_dir)]
-        files_by_mask += cur_files
-    return files_by_mask
-
-
-def get_dirs(photos: list) -> dict:
-    """
-    Из полного списка файлов вернуть словарь
-        ключ - имя директории
-        значение - список файлов в этой директории
-    """
-    dirs_photos = {}  # рабочий словарь с ключом имя-директории и данными для сохранения
-    for i in range(len(photos)):
-        photo = str(photos[i])
-        d_photo = str(pathlib.Path(photo).parent.resolve())
-        if dirs_photos.get(d_photo, False):
-            dirs_photos[d_photo].append(pathlib.Path(photo).name)
-        else:
-            dirs_photos[d_photo] = [pathlib.Path(photo).name]  # новая директория, начинаем список с текущего файла
-    return dirs_photos
 
 
 cm: str = lambda s: colorama.Fore.LIGHTMAGENTA_EX + str(s) + colorama.Fore.RESET
@@ -246,25 +171,35 @@ def short_list(long_list: list, max_len: int = 5, separator: str = ', ', hidden_
 
 if __name__ == '__main__':
     import colorama
+    from PIL import Image
+    from xmpfaces import xmpfaces
 
     print('Тест на первоначальную инициализацию')
-    # for param in [('',), ('mystore',), ('mystore.JSON', '../source'), ('mystore.pickle', 'mydir')]:
-    #     print(param, "\n\t\t", FacesStore(*param).__dict__)
+    # for params in [
+    #     {},
+    #     {'json_file': '', 'dirs': [Path('testpict'), ], 'mask': ['jpg', 'json', ]},
+    #     {'json_file': 'myjson'},
+    #     {'json_file': 'my.JSON'},
+    #     {'json_file': 'mysave.save'},
+    #     ]:
+    #     fs = FacesStore(**params)
+    #     print(params, f' --> json_file={cg(str(fs.json_file))}')
+    #
+    # print('Тест на .dirs и  .files')
+    # path = 'testpict'
+    # # path = r's:\MyMedia\Фото'
+    # fs = FacesStore(dirs=[Path(path), ])
+    # # fs = FacesStore()
+    # # print('Создали объект...')
+    # # fs.get_dirs(dirs=[Path(path), ])
+    # for d, files in fs.dirs.items():
+    #     print(d, cg(len(files)))
+    #     # for f in files:
+    #     #     print(Path(d) / f)
+    # print(f'Директорий {cm(len(fs.dirs))} файлов {cm(len(fs.files))}')
+    # print()
 
-    print('Тест на is_exis')
-    # t = FacesStore()
-    # for test in [('', ''), ('photos.pickle', 'testpict'), ('photos.json', 'testpict'), ('photos.', 'testpict/anna'), ]:
-    #     if t.is_exist(test[0], test[1]):
-    #         print('Есть файл хранилища лиц', test[0], 'в директории', test[1])
-    #     else:
-    #         print('Отсутствует файл ', test[0], 'в директории', test[1])
-
-    # print('Тест на флаги методов enum.Flag')
-    # flag = Method.EXIF | Method.CV2 | Method.FACE_RECOGNITION
-    # print(bool(flag & Method.DLIB))
-    # print(bool(flag & Method.CV2))
-
-    print('Тест на short_list')
+    # print('Тест на short_list')
     # for test_list in [
     #     {'long_list': ['1', 2, '3', '4', '5', 6, ], 'max_len':5, 'separator': ' '},
     #     {'long_list': ['-----1-----', '-2-']*10, 'max_len':15, },
@@ -277,13 +212,25 @@ if __name__ == '__main__':
     # ]:
     #     print(f'{short_list(**test_list)}')
 
-    print('Тест на get_files_by_mask и get_dirs')
-    # for test in [('testpict testpict/anna', True), ('testpict', False), ('../scrapered_pictures', False), ]:
-    #     files = test[0].split()
-    #     local = test[1]
-    #     photo_files = get_files_by_mask(files=files, local=local)
-    #     print(f'Всего {cm(len(photo_files))} в {cm(test[0])} {"с поддиректориями" if not local else ""} ')
-    #     for cur_dir, files_in_dir in get_dirs(photo_files).items():
-    #         print(f'{cm(len(files_in_dir))} файлов в {cur_dir}: {short_list(files_in_dir, )}')
+    # dirs, local = ([r's:\MyMedia\Фото\Друзья\00000000 Гараж и баня у Андрюхи'], False)
+    dirs, local = ([Path(r'testpict')], False)
+    fs = FacesStore(dirs=dirs, local=local, json_file='myjson.json')
+    print(
+        f'Всего {cm(len(fs.files))} в {cm(dirs)} {"с поддиректориями" if not local else ""} в {cm(len(fs.dirs))} директориях')
+    for cur_dir, files_in_dir in fs.dirs.items():
+        for photo in files_in_dir:
+            pil_photo = Image.open(Path(cur_dir) / Path(photo))
+            faces = xmpfaces(pil_photo)
+            if faces:
+                fs.add_data(method=Method.EXIF,
+                            dir=cur_dir,
+                            file=photo,
+                            data={
+                                'width': pil_photo.width,
+                                'height': pil_photo.height,
+                            }, faces=faces)
+        print(f'{cm(len(files_in_dir))}/{cg(len(fs.photos))} файлов в {cur_dir}: {short_list(files_in_dir, )}')
+    fs.save(description='Сборная солянка')
+
 
     print(cg('Done'))
