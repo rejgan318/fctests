@@ -42,10 +42,8 @@ class Photos(BaseModel):
     program_name: str = 'Face Store'
     version: str = '0.4'  # Текущая версия
     descriptions: str = ''
-    # path: str
     methods: Method
-    photos: dict = {}
-    # photos: list[PhotoFile]
+    photos: dict[str, dict[str, PhotoFile]] = {}
 
 
 class FacesStore:
@@ -121,11 +119,6 @@ class FacesStore:
 
     def _parse_exif(self, dir: str, file: str, data: dict, faces: list[dict]):
         data_faces = [FaceInfo(**p) for p in faces]
-        # if file in [p.name for p in self.photos]:  # протестироваь ветку, если файл уже есть в списке и обрабатывается другим методом
-        #     self.photos[[p.name for p in self.photos].index(file)].faces_exif = data_faces
-        # else:
-        #     self.photos.append(PhotoFile(name=file, width=data['width'], height=data['height'],
-        #                                  faces_exif=data_faces))
         if not self.photos.get(dir, None):
             self.photos[dir] = {}
         if not self.photos[dir].get(file, None):
@@ -144,8 +137,12 @@ class FacesStore:
         json_file = Path(json_file) if json_file else self.json_file
         json_file.write_text(photos.json(indent=2, ensure_ascii=False), encoding='utf-8')
 
-    def load(self, json_file: str):
-        pass
+    @classmethod
+    def load(cls, json_file: str) -> Photos:
+    # def load(self, json_file: str) -> Photos:
+        return Photos.parse_file(json_file)
+        # return Photos.parse_file(Path(json_file))
+        # self.photos = Photos.parse_file(Path(json_file))
 
 
 cm: str = lambda s: colorama.Fore.LIGHTMAGENTA_EX + str(s) + colorama.Fore.RESET
@@ -212,9 +209,10 @@ if __name__ == '__main__':
     # ]:
     #     print(f'{short_list(**test_list)}')
 
-    # dirs, local = ([r's:\MyMedia\Фото\Друзья\00000000 Гараж и баня у Андрюхи'], False)
-    dirs, local = ([Path(r'testpict')], False)
-    fs = FacesStore(dirs=dirs, local=local, json_file='myjson.json')
+    dirs, local = ([Path(r's:\MyMedia\Фото\Друзья\00000000 Гараж и баня у Андрюхи')], False)
+    # dirs, local = ([Path(r'testpict')], False)
+    json_file = 'myjson.json'
+    fs = FacesStore(dirs=dirs, local=local, json_file=json_file)
     print(
         f'Всего {cm(len(fs.files))} в {cm(dirs)} {"с поддиректориями" if not local else ""} в {cm(len(fs.dirs))} директориях')
     for cur_dir, files_in_dir in fs.dirs.items():
@@ -229,8 +227,16 @@ if __name__ == '__main__':
                                 'width': pil_photo.width,
                                 'height': pil_photo.height,
                             }, faces=faces)
-        print(f'{cm(len(files_in_dir))}/{cg(len(fs.photos))} файлов в {cur_dir}: {short_list(files_in_dir, )}')
-    fs.save(description='Сборная солянка')
+        print(f'{cm(len(files_in_dir))} файлов в {cur_dir}: {short_list(files_in_dir, )}')
+    fs.save(description='Сборная солянка, второй полет')
+
+    ps = FacesStore.load(json_file=json_file)
+    print(f'\nЗагрузка данных из {json_file}\nИмя программы {ps.program_name}\nМетоды {ps.methods}')
+    for cur_dir, photofiles in ps.photos.items():
+        print(cur_dir)
+        for file_name, photofile in photofiles.items():
+            print(f'\t{file_name} {photofile.width}*{photofile.height} лиц {len(photofile.faces_exif)}',
+                  ','.join([f.name for f in photofile.faces_exif]))
 
 
     print(cg('Done'))
