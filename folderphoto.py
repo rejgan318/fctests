@@ -1,12 +1,24 @@
-from PIL import Image, ExifTags
+"""
+Служебный файл для photoviewer
+"""
+from PIL import Image, ExifTags, ImageDraw, ImageFont
 import io
-import pathlib
+from pathlib import Path
+import facesstore
+from xmpfaces import get_face_rect, xmpfaces
 
 
 class FolderPhoto:
+
+    json_file = 'exif.json'
+    faces = facesstore.FacesStore.load(json_file)
+    # fnt = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
+    fnt = ImageFont.truetype("Absolut Pro Light Condensed.ttf", 14, encoding='UTF-8')
+    # fnt = ImageFont.truetype("Zekton Condensed Book.ttf", 12, encoding='UTF-8')
+
     def __init__(self, folder_name):
         self.MASK = '*.jpg'
-        self.folder = pathlib.Path(folder_name).resolve()
+        self.folder = Path(folder_name).resolve()
         self.photos = self.get_photos()
         self.dirs = self.get_dirs()
         self.count = len(self.photos)
@@ -14,6 +26,7 @@ class FolderPhoto:
         self.name = None
         self.img = None
         self.need_refresh: bool = True
+        self.maxsize = (1530, 850)
         if len(self.photos):
             self.refresh(0)
             # self.need_refresh: bool = True
@@ -42,31 +55,65 @@ class FolderPhoto:
 
     def get_photos(self):
         """ получить список фотографий """
-        return [str(p.name) for p in pathlib.Path(self.folder).glob(self.MASK) if p.is_file()]
+        return [str(p.name) for p in Path(self.folder).glob(self.MASK) if p.is_file()]
 
     def get_dirs(self):
         """ получить список поддиректорий, добавив .. """
-        return ['..'] + [str(d.name) for d in pathlib.Path(self.folder).glob("*") if d.is_dir()]
+        return ['..'] + [str(d.name) for d in Path(self.folder).glob("*") if d.is_dir()]
 
     def get_img(self):
         """ загрузить файл; проверить по exif, если необходимо - повернуть; промасштабировать """
-        maxsize = (1530, 850)
-        self.img = Image.open(pathlib.Path(self.folder) / self.name)
-        try:
-            for orientation in ExifTags.TAGS.keys():
-                if ExifTags.TAGS[orientation] == 'Orientation':
-                    break
-            exif = self.img._getexif()
-            if exif:
-                if exif[orientation] == 3:
-                    self.img = self.img.rotate(180, expand=True)
-                elif exif[orientation] == 6:
-                    self.img = self.img.rotate(270, expand=True)
-                elif exif[orientation] == 8:
-                    self.img = self.img.rotate(90, expand=True)
-        except (AttributeError, KeyError, IndexError):
-            pass  # cases: image don't have getexif
-        self.img.thumbnail(maxsize)
+        self.img = Image.open(Path(self.folder) / self.name)
+
+        photo_file = self.faces.get_photo(str(self.folder), str(self.name))
+        color = 'green'
+        if photo_file:
+            face_exif = self.faces.photos[str(self.folder)][str(self.name)].faces_exif
+            if len(face_exif):
+                color = 'yellow'
+        else:
+            face_exif = [facesstore.FaceInfo(**f) for f in xmpfaces(self.img)]
+
+        tag_orientation = 274
+        exif = self.img._getexif()
+        if exif and exif.get(tag_orientation, None):
+            rotate = exif[tag_orientation]
+            if rotate == 3:
+                self.img = self.img.rotate(180, expand=True)
+            elif rotate == 6:
+                self.img = self.img.rotate(270, expand=True)
+            elif rotate == 8:
+                self.img = self.img.rotate(90, expand=True)
+        else:
+            rotate = None
+
+        # try:
+        #     for orientation in ExifTags.TAGS.keys():
+        #         if ExifTags.TAGS[orientation] == 'Orientation':
+        #             break
+        #     exif = self.img._getexif()
+        #     if exif:
+        #         if exif[orientation] == 3:
+        #             self.img = self.img.rotate(180, expand=True)
+        #         elif exif[orientation] == 6:
+        #             self.img = self.img.rotate(270, expand=True)
+        #         elif exif[orientation] == 8:
+        #             self.img = self.img.rotate(90, expand=True)
+        # except (AttributeError, KeyError, IndexError):
+        #     pass  # cases: image don't have getexif
+
+        self.img.thumbnail(self.maxsize)
+        if len(face_exif):
+            self.draw_faces(face_exif, color=color, rotate=rotate)
+
+    def draw_faces(self, faces: list[facesstore.FaceInfo], color: str, rotate=None):
+        draw = ImageDraw.Draw(self.img)
+        for face in faces:
+            xy = get_face_rect(xywh=(face.x, face.y, face.w, face.h), im_wh=self.img.size, rotate=rotate)
+            # xy = get_face_rect(xywh=(face.x, face.y, face.w, face.h), im_wh=(self.img.width, self.img.height))
+            draw.rectangle(xy, fill=None, width=1, outline=color)
+            if face.name:
+                draw.text((xy[0], xy[1]-14), face.name, font=self.fnt, fill=color)
 
     def get_img_data(self):
         """ Вернуть img в формате png (из-за ограничений tkinter) """
@@ -77,4 +124,4 @@ class FolderPhoto:
         return bio.getvalue()
 
     def status(self) -> str:
-        return f'  {self.num + 1}/{self.count}   ' + str(pathlib.Path(self.folder) / self.name) if self.name else ''
+        return f'  {self.num + 1}/{self.count}   ' + str(Path(self.folder) / self.name) if self.name else ''

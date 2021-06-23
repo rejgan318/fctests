@@ -14,13 +14,11 @@ NS_DICT = {
 def ns_key(ns_name: str, symbolic_name: str, ns_dict=None) -> str:
     """
     Сформировать ключ атрибута, учитывая пространство имен
-
     :param ns_name: пространство имен
     :param symbolic_name: символическое имя атрибута
     :param ns_dict: словарь пространств
     :return: сформированный ключ типа такого '{http://www.metadataworkinggroup.com/schemas/regions/}name'
     """
-
     if ns_dict is None:
         ns_dict = NS_DICT
     return f'{{{ns_dict[ns_name]}}}{symbolic_name}'
@@ -29,11 +27,9 @@ def ns_key(ns_name: str, symbolic_name: str, ns_dict=None) -> str:
 def get_xmp(pil_im) -> str:
     """
     Получить из объекта типа PIL.Image xmp сектицию в виде xml-разметки
-
     :param pil_im:
     :return: строка utf-8, содержащая xmp в xml-формате
     """
-
     SEGMENT = 'APP1'
     MARKER = b'http://ns.adobe.com/xap/1.0/'
 
@@ -49,7 +45,37 @@ def get_xmp(pil_im) -> str:
             return str(body.decode('utf-8'))
 
 
-def get_faces(xml_xmp: str):
+def get_face_rect(xywh: tuple[float, float, float, float], im_wh: tuple[int, int], rotate: int = None)\
+        -> tuple[int, int, int, int]:
+    """
+    Сервисная функция. Полезная для получения абсолютных координат прямоугольника лица после масштабирования
+    по заданным нормализованным координатам центра xy размером wh (xywh). Учитывается возможный поворот,
+    если указана ориентация
+    :param xywh: нормализованные координаты центра и размеры прямоугольника (обычно из Exif)
+    :param im_wh: размеры в пикселях отображаемого изображения, для которого нужно вычислить абсолютные координаты углов
+    :param rotate: None | 3 | 6 | 8 - ориентация из exif - нет | 180 | 270 | 90
+    :return: абсолютные координаты прямоугольника лица на изображении с размерами im_wh
+    """
+    ROTATE_180, ROTATE_270, ROTATE_90 = 3, 6, 8
+    x, y, w, h = xywh
+    imw, imh = im_wh
+    # при повороте не меняются размеры, только координаты центра прямоугольника
+    if rotate == ROTATE_180:
+        x = 1 - x
+        y = 1 - y
+    elif rotate == ROTATE_270:
+        x, y = y, x
+    elif rotate == ROTATE_90:
+        x = 1 - y
+        y = 1 - x
+    x1 = int(imw * (x - w / 2))
+    y1 = int(imh * (y - h / 2))
+    x2 = int(imw * (x + w / 2))
+    y2 = int(imh * (y + h / 2))
+    return x1, y1, x2, y2
+
+
+def get_faces(xml_xmp: str) -> list[dict]:
     faces = []
     # parser = ET.XMLParser(encoding="utf-8")
     # tree = ET.fromstring(xml_xmp, parser=parser)
@@ -80,16 +106,15 @@ def get_faces(xml_xmp: str):
         face['x'] = float(xml_area.get(ns_key('stArea', 'x')))
         face['y'] = float(xml_area.get(ns_key('stArea', 'y')))
         # абсолютные координаты в пикселях
-        face['x1'] = int(im_w * (face['x'] - face['w'] / 2))
-        face['y1'] = int(im_h * (face['y'] - face['h'] / 2))
-        face['x2'] = int(im_w * (face['x'] + face['w'] / 2))
-        face['y2'] = int(im_h * (face['y'] + face['h'] / 2))
+        face['x1'], face['y1'], face['x2'], face['y2'] = get_face_rect(xywh=(face['x'], face['y'], face['w'], face['h']),
+                                                                       im_wh=(im_w, im_h))
         faces.append(face)
     return faces
 
 
-def xmpfaces(image):
+def xmpfaces(image) -> list[dict]:
     """
+    Основная функция модуля
     :param image: PIL-Image
     :return: список словарей с информацияей о помеченных областях на фотографии
     """
@@ -101,7 +126,7 @@ def xmpfaces(image):
 
 if __name__ == '__main__':
     import pathlib
-    from PIL import Image, ImageDraw, ExifTags
+    from PIL import Image, ExifTags
     import colorama
     from facesstore import get_files_by_mask, get_dirs, short_list, FacesStore, Method
     # import facesstore
@@ -123,26 +148,6 @@ if __name__ == '__main__':
     # xml_xmp = get_xmp(im)
     # print(xml_xmp)
 
-    # files, local = ([r's:\MyMedia\Фото\Друзья\00000000 Гараж и баня у Андрюхи\20190506 В гараже с Масловым и Бартом'], False)
-    # files, local = (['testpict'], False)
-    files, local = ([r's:\MyMedia\Фото\Друзья\00000000 Гараж и баня у Андрюхи'], False)
-    photo_files = get_files_by_mask(files=files, local=local)
-    dirs = get_dirs(photo_files)
-    print(f'Всего {cm(len(photo_files))} в {cm(files)} {"с поддиректориями" if not local else ""} в {cm(len(dirs))} директориях')
-    for cur_dir, files_in_dir in dirs.items():
-        fs = FacesStore('myjson.json')
-        for photo in files_in_dir:
-            pil_photo = Image.open(pathlib.Path(cur_dir) / pathlib.Path(photo))
-            faces = xmpfaces(pil_photo)
-            if faces:
-                fs.add_data(method=Method.EXIF,
-                            name=photo,
-                            data={
-                                'width': pil_photo.width,
-                                'height': pil_photo.height,
-                            }, faces=faces)
-        fs.save(path=pathlib.Path(cur_dir), description='Тестовый полет')
-        print(f'{cm(len(files_in_dir))}/{cg(len(fs.photos))} файлов в {cur_dir}: {short_list(files_in_dir, )}')
 
     # imdir = pathlib.Path('testpict')
     # for impil in imdir.glob('*.jpg'):

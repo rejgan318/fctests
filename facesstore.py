@@ -1,5 +1,5 @@
 """
-
+Интерфайс между модулями распознования лиц и json-файлом хоанения результатов
 """
 from enum import IntFlag
 from pathlib import Path
@@ -43,7 +43,12 @@ class Photos(BaseModel):
     version: str = '0.4'  # Текущая версия
     descriptions: str = ''
     methods: Method
+    time: str = time.strftime("%m/%d/%Y, %H:%M:%S", time.localtime())
     photos: dict[str, dict[str, PhotoFile]] = {}
+
+    def get_photo(self, dir_name: str, file_name: str) -> PhotoFile:
+        if self.photos.get(dir_name, None):
+            return self.photos[dir_name].get(file_name, None)
 
 
 class FacesStore:
@@ -77,9 +82,7 @@ class FacesStore:
         if self.dirs_names:
             self.get_files()
             self.get_dirs()
-
         self.photos: dict = {}  # данные для сохранения / считывания
-        # self.photos: list[PhotoFile] = []  # данные для сохранения / считывания
 
     def get_files(self):
         """
@@ -139,14 +142,7 @@ class FacesStore:
 
     @classmethod
     def load(cls, json_file: str) -> Photos:
-    # def load(self, json_file: str) -> Photos:
         return Photos.parse_file(json_file)
-        # return Photos.parse_file(Path(json_file))
-        # self.photos = Photos.parse_file(Path(json_file))
-
-
-cm: str = lambda s: colorama.Fore.LIGHTMAGENTA_EX + str(s) + colorama.Fore.RESET
-cg: str = lambda s: colorama.Fore.LIGHTGREEN_EX + str(s) + colorama.Fore.RESET
 
 
 def short_list(long_list: list, max_len: int = 5, separator: str = ', ', hidden_num: bool = True) -> str:
@@ -170,6 +166,9 @@ if __name__ == '__main__':
     import colorama
     from PIL import Image
     from xmpfaces import xmpfaces
+
+    cm: str = lambda s: colorama.Fore.LIGHTMAGENTA_EX + str(s) + colorama.Fore.RESET
+    cg: str = lambda s: colorama.Fore.LIGHTGREEN_EX + str(s) + colorama.Fore.RESET
 
     print('Тест на первоначальную инициализацию')
     # for params in [
@@ -209,9 +208,9 @@ if __name__ == '__main__':
     # ]:
     #     print(f'{short_list(**test_list)}')
 
-    dirs, local = ([Path(r's:\MyMedia\Фото\Друзья\00000000 Гараж и баня у Андрюхи')], False)
-    # dirs, local = ([Path(r'testpict')], False)
-    json_file = 'myjson.json'
+    # dirs, local = ([Path(r's:\MyMedia\Фото\Друзья\00000000 Гараж и баня у Андрюхи')], False)
+    dirs, local = ([Path(r'testpict')], False)
+    json_file = 'exif.json'
     fs = FacesStore(dirs=dirs, local=local, json_file=json_file)
     print(
         f'Всего {cm(len(fs.files))} в {cm(dirs)} {"с поддиректориями" if not local else ""} в {cm(len(fs.dirs))} директориях')
@@ -237,6 +236,15 @@ if __name__ == '__main__':
         for file_name, photofile in photofiles.items():
             print(f'\t{file_name} {photofile.width}*{photofile.height} лиц {len(photofile.faces_exif)}',
                   ','.join([f.name for f in photofile.faces_exif]))
-
+    for dir, file in [
+        (r'S:\dev\pytondev\printscreenscr\testpict', r'IMG_5590.jpg'),
+        (r'S:\dev\pytondev\printscreenscr\testpict\Гараж', r'IMG_8731.JPG'),
+        ]:
+        pp = ps.photos[dir][file]
+        print(f'\n{" Информация fc: ":-^80}\n{"Директория":14}: {cm(dir)}\n{"Файл":14}: {cm(file)}'
+              f'\n{"Размер":14}: {cm(pp.width)}✲{cm(pp.height)}\n{"Найдено лиц":14}: {cm(len(pp.faces_exif))}')
+        for f in pp.faces_exif:
+            print(f'\t{cm("🤠")} {f.name:25} x: {f.x:6.4f}   y: {f.y:6.4f}   w: {f.w:6.4f}   h: {f.h:6.4f}'
+                  f'   x1: {f.x1:4}   y1: {f.y1:4}   x2: {f.x2:4}   y2: {f.y2:4}')
 
     print(cg('Done'))

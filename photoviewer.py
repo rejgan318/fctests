@@ -7,14 +7,14 @@ import PySimpleGUI as sg
 # import io
 import pathlib
 from folderphoto import FolderPhoto
+# import facesstore
 
 folder = 'testpict'
 ps = FolderPhoto(folder)
-
 lcol = [
-    [sg.Listbox(values=ps.dirs, enable_events=True, size=(20, 5), font=('default', 10, 'bold'),
+    [sg.Listbox(values=ps.dirs, enable_events=True, size=(20, 10), font=('default', 10, 'bold'),
                 tooltip='Поддиректории', key='-DIRECTORIES-')],
-    [sg.Listbox(values=ps.photos, enable_events=True, size=(20, 10), key='-PHOTOS-')],
+    [sg.Listbox(values=ps.photos, enable_events=True, size=(20, 20), key='-PHOTOS-')],
 ]
 rcol = [[sg.Image(data=ps.get_img_data(), key='-IMAGE-')]]
 layout = [[sg.Column(lcol, vertical_alignment='top'), sg.Column(rcol)]]
