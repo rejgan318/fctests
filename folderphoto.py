@@ -87,21 +87,6 @@ class FolderPhoto:
         else:
             rotate = None
 
-        # try:
-        #     for orientation in ExifTags.TAGS.keys():
-        #         if ExifTags.TAGS[orientation] == 'Orientation':
-        #             break
-        #     exif = self.img._getexif()
-        #     if exif:
-        #         if exif[orientation] == 3:
-        #             self.img = self.img.rotate(180, expand=True)
-        #         elif exif[orientation] == 6:
-        #             self.img = self.img.rotate(270, expand=True)
-        #         elif exif[orientation] == 8:
-        #             self.img = self.img.rotate(90, expand=True)
-        # except (AttributeError, KeyError, IndexError):
-        #     pass  # cases: image don't have getexif
-
         self.img.thumbnail(self.maxsize)
         if len(face_exif):
             self.draw_faces(face_exif, color=color, rotate=rotate)
@@ -110,7 +95,6 @@ class FolderPhoto:
         draw = ImageDraw.Draw(self.img)
         for face in faces:
             xy = get_face_rect(xywh=(face.x, face.y, face.w, face.h), im_wh=self.img.size, rotate=rotate)
-            # xy = get_face_rect(xywh=(face.x, face.y, face.w, face.h), im_wh=(self.img.width, self.img.height))
             draw.rectangle(xy, fill=None, width=1, outline=color)
             if face.name:
                 draw.text((xy[0], xy[1]-14), face.name, font=self.fnt, fill=color)
