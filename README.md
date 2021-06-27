@@ -9,7 +9,7 @@
 
 <details><summary>Подробнее</summary>
 
-Скрытый текст
+  Скрытый текст
 
 ![Текст для изображения, который обычно не виден](https://github.com/rejgan318/fctests/blob/master/imgs/img1.jpg?raw=true "Полная ссылка")
 
@@ -17,9 +17,9 @@
 
 <details><summary>Котеночек</summary>
 
-[![Кртеночек введите сюда описание изображения][1]][1]
+[![Кртеночек][Кот]][Кот]
  
-[1]: https://i.stack.imgur.com/AKtls.jpg 
+[Кот]: https://i.stack.imgur.com/AKtls.jpg 
  
 </details>
 
