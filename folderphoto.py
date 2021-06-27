@@ -13,7 +13,7 @@ class FolderPhoto:
     json_file = 'exif.json'
     faces = facesstore.FacesStore.load(json_file)
     # fnt = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
-    fnt = ImageFont.truetype("Absolut Pro Light Condensed.ttf", 14, encoding='UTF-8')
+    fnt = ImageFont.truetype("fonts/Absolut Pro Light Condensed.ttf", 14, encoding='UTF-8')
     # fnt = ImageFont.truetype("Zekton Condensed Book.ttf", 12, encoding='UTF-8')
 
     def __init__(self, folder_name):
