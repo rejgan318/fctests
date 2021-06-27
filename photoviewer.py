@@ -17,13 +17,14 @@ lcol = [
     [sg.Listbox(values=ps.photos, enable_events=True, size=(20, 20), key='-PHOTOS-')],
 ]
 rcol = [[sg.Image(data=ps.get_img_data(), key='-IMAGE-')]]
-layout = [[sg.Column(lcol, vertical_alignment='top'), sg.Column(rcol)]]
+status_line = [sg.Text('Левая сторона'), sg.Text('Правая сторона')]
+layout = [[sg.Column(lcol, vertical_alignment='top'), sg.Column(rcol)], status_line]
 window = sg.Window('Image Browser: ' + ps.status(), layout, return_keyboard_events=True,
                    location=(0, 0), use_default_focus=False, resizable=True, finalize=True)
 window.maximize()
 
 while True:
-    event, values = window.read()
+    event, values = window.read(timeout=500, timeout_key='_timeout_')
     # print(event, values)
     if event in (sg.WIN_CLOSED, 'Escape:27'):
         break
@@ -49,4 +50,10 @@ while True:
         window['-PHOTOS-'].update(set_to_index=ps.num)
         window['-IMAGE-'].update(data=ps.get_img_data())
         ps.need_refresh = False
+        # sg.popup_timed(ps.status(), no_titlebar=True, button_type=sg.POPUP_BUTTONS_NO_BUTTONS,
+        #                auto_close_duration=1.8, non_blocking=True, grab_anywhere=True, modal=False,)
+        # sg.popup_no_wait(ps.status(), no_titlebar=True, button_type=sg.POPUP_BUTTONS_NO_BUTTONS,
+        #               auto_close=True, auto_close_duration=1.8, )
+        # sg.popup_quick_message(ps.status(), no_titlebar=True, auto_close_duration=0.5, )
 window.close()
+del window
