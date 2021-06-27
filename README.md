@@ -17,7 +17,7 @@
 
 <details><summary>Котеночек</summary>
 
-[![Кртеночек][Кот]][Кот]
+[![Кртеночек][Кот]][Картинка]
  
 [Кот]: https://i.stack.imgur.com/AKtls.jpg 
  
