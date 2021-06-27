@@ -13,5 +13,5 @@
  
 [1]: https://i.stack.imgur.com/AKtls.jpg 
  
- ![before_after_image](https://github.com/rejgan318/noteshrinker-django/blob/master/example/before_after.jpg?raw=true "Before-After")
+ ![before_after_image](https://github.com/rejgan318/fctests/blob/master/imgs/img1.jpg?raw=true "1111-After")
 </details>
