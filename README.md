@@ -5,7 +5,7 @@
 
 Вставляю [вторую ссылку][mylink] в текст
 
-Кртинка по ссылке ![mylink]
+Кртинка по ссылке ![Картинка]
 
 <details><summary>Подробнее</summary>
 
@@ -23,4 +23,4 @@
  
 </details>
 
-[mylink]: imgs/img1.jpg?raw=true "Вторая ссылка"
+[Картинка]: imgs/img1.jpg?raw=true "Вторая ссылка"
