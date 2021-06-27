@@ -1,21 +1,13 @@
 # fctests
 ##Tests of face recoggnation
 
-:blowfish:Here's a simple footnote, and here's a longer one.[^bignote]
-
-[^bignote]: Here's one with multiple paragraphs and code.
-
-    Indent paragraphs to include them in the footnote.
-
-    `{ my code }`
-
-    Add as many paragraphs as you like.
+:blowfish: Рыбка по коду
     
 ![Текст для изображения, который обычно не виден](imgs/img1.jpg?raw=true "Короткая ссылка")
 
 [2]: imgs/img1.jpg?raw=true "Вторая ссылка"
 
-<details><summary>Подробнее ❤️‍🔥</summary>
+<details><summary>Подробнее</summary>
 
 Скрытый текст
 
