@@ -1,7 +1,7 @@
 # fctests
 ## Tests of face recoggnation
 
-:blowfish: Рыбка по коду
+:blowfish: Рыбка по коду 
 
 Вставляю [вторую ссылку][Картинка] в текст
 
