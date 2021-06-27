@@ -2,12 +2,10 @@
 ## Tests of face recoggnation
 
 :blowfish: Рыбка по коду
-    
-![Текст для изображения, который обычно не виден](imgs/img1.jpg?raw=true "Короткая ссылка")
 
 Вставляю [вторую ссылку][2] в текст
 
-[2]: imgs/img1.jpg?raw=true "Вторая ссылка"
+![Текст для изображения, который обычно не виден](imgs/img1.jpg?raw=true "Короткая ссылка")
 
 <details><summary>Подробнее</summary>
 
@@ -24,3 +22,5 @@
 [1]: https://i.stack.imgur.com/AKtls.jpg 
  
 </details>
+
+[2]: imgs/img1.jpg?raw=true "Вторая ссылка"
