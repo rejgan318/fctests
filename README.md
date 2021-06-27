@@ -4,6 +4,7 @@
 
 Скрытый текст
 
+![Текст для изображения, который обычно не виден](https://github.com/rejgan318/fctests/blob/master/imgs/img1.jpg?raw=true "Это title картинки")
 
 </details>
 
@@ -13,5 +14,4 @@
  
 [1]: https://i.stack.imgur.com/AKtls.jpg 
  
- ![before_after_image](https://github.com/rejgan318/fctests/blob/master/imgs/img1.jpg?raw=true "1111-After")
 </details>
