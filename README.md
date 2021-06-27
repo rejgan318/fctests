@@ -1,5 +1,8 @@
 # fctests
 ##Tests of face recoggnation
+
+![Текст для изображения, который обычно не виден](imgs/img1.jpg?raw=true "Это title картинки")
+
 <details><summary>Подробнее</summary>
 
 Скрытый текст
