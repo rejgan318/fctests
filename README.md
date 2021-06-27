@@ -1,6 +1,14 @@
 # fctests
 ##Tests of face recoggnation
 
+```json
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "age": 25
+}
+```
+
 ![Текст для изображения, который обычно не виден](imgs/img1.jpg?raw=true "Короткая ссылка")
 
 [2]: imgs/img1.jpg?raw=true "Вторая ссылка"
