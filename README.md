@@ -1,11 +1,16 @@
 # fctests
 ##Tests of face recoggnation
 
-:blowfish:
-Here's a sentence with a footnote. [^3]
+:blowfish:Here's a simple footnote, and here's a longer one.[^bignote]
 
-[^3]: This is the footnote.
+[^bignote]: Here's one with multiple paragraphs and code.
 
+    Indent paragraphs to include them in the footnote.
+
+    `{ my code }`
+
+    Add as many paragraphs as you like.
+    
 ![Текст для изображения, который обычно не виден](imgs/img1.jpg?raw=true "Короткая ссылка")
 
 [2]: imgs/img1.jpg?raw=true "Вторая ссылка"
