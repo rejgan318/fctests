@@ -1,10 +1,11 @@
 # fctests
-##Tests of face recoggnation
+## Tests of face recoggnation
 
 :blowfish: Рыбка по коду
     
 ![Текст для изображения, который обычно не виден](imgs/img1.jpg?raw=true "Короткая ссылка")
 
+Вставляю [вторую ссылку][2] в текст
 [2]: imgs/img1.jpg?raw=true "Вторая ссылка"
 
 <details><summary>Подробнее</summary>
