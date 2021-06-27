@@ -2,11 +2,12 @@
 ## Tests of face recoggnation
 
 
-<details><summary>Подробнее</summary>
+<details><summary>Внутри ссылка и картинка</summary>
 
 Вставляю [:blowfish: Рыбка по коду ][Картинка] в текст
 
-Кртинка по ссылке ![Картинка]
+Кртинка по ссылке
+![Картинка]
 
 
 </details>
