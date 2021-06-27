@@ -2,9 +2,9 @@
 ##Tests of face recoggnation
 
 :blowfish:
-Here's a sentence with a footnote. [^1]
+Here's a sentence with a footnote. [^3]
 
-[^1]: This is the footnote.
+[^3]: This is the footnote.
 
 ![Текст для изображения, который обычно не виден](imgs/img1.jpg?raw=true "Короткая ссылка")
 
